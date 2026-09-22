@@ -44,3 +44,24 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/testdb
           OPEN_WEATHER_API_KEY: dummy-key-for-ci
           WEATHER_API_URL: https://example.com/
+
+  deploy-simulated:
+    name: Simulated deploy (no real server yet)
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (same as your manual "npm i")
+        run: npm i
+
+      - name: "Simulate: pm2 restart"
+        # No real server yet, so this just proves the deploy JOB's shape and
+        # its dependency on the test job. Once you have a server, replace
+        # this whole step with the appleboy/ssh-action block we designed
+        # earlier (or, for a true local test, switch runs-on to
+        # "self-hosted" and drop the SSH step entirely).
+        run: |
+          echo "If this were real, we'd now run: pm2 restart 0"
+          echo "Deploy job ran successfully after CI passed."

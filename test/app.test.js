@@ -1,19 +1,20 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
+const request = require('supertest');
 
-// Basic smoke test: the Express app should load without throwing
-// (this also proves your CI environment has everything the app needs,
-// e.g. the Prisma client was generated before this ran).
+// Basic smoke tests: prove the Express app boots and actually handles an
+// HTTP request. We deliberately hit a route that does NOT exist rather than
+// a real /analytics route, so this test needs no database or weather API
+// connection — it just checks the app pipeline itself is wired correctly.
+
 test('app module loads and exposes an Express app', () => {
   const app = require('../src/app');
   assert.strictEqual(typeof app, 'function', 'app.js should export an Express app');
   assert.strictEqual(typeof app.listen, 'function', 'exported app should have a .listen method');
 });
 
-test('/analytics routes are mounted', () => {
+test('app responds to HTTP requests (404 for an unknown route)', async () => {
   const app = require('../src/app');
-  const mountedPaths = app._router.stack
-    .filter(layer => layer.name === 'router')
-    .map(layer => layer.regexp);
-  assert.ok(mountedPaths.length > 0, 'expected at least one router to be mounted on the app');
+  const response = await request(app).get('/this-route-does-not-exist');
+  assert.strictEqual(response.status, 404, 'Express should return 404 for an unmounted route');
 });

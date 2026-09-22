@@ -1,6 +1,6 @@
 # Continuous Integration for Weather_Task
 #
-# Runs on every push and every pull request. Nothing deploys yet on purpose —
+# Runs on every push to dev, and every pull request into main. Nothing deploys yet on purpose —
 # this is step 1: get a green pipeline running install -> prisma generate -> test.
 # Deploy comes later, once this loop feels familiar.
 
@@ -8,7 +8,7 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches: [dev]
   pull_request:
     branches: [main]
 

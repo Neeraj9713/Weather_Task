@@ -1,0 +1,46 @@
+# Continuous Integration for Weather_Task
+#
+# Runs on every push and every pull request. Nothing deploys yet on purpose —
+# this is step 1: get a green pipeline running install -> prisma generate -> test.
+# Deploy comes later, once this loop feels familiar.
+
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        # Required before anything can `require('@prisma/client')` — the app
+        # imports it as soon as src/config/prisma.js is loaded.
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+
+      - name: Run tests
+        run: npm test
+        env:
+          # Dummy values: today's tests only check the app boots and routes
+          # mount correctly — nothing actually connects to a database or
+          # calls the real weather API yet.
+          DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+          OPEN_WEATHER_API_KEY: dummy-key-for-ci
+          WEATHER_API_URL: https://example.com/
